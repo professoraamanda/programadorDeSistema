@@ -11,12 +11,6 @@ def commit_close(funcao):
         print("ok!")
     return decorator
 
-#nome = input("nome: ")
-#sobrenome = input("sobrenome: ")
-#cpf = input("cpf: ")
-#tempoDeServico = int(input("Tempo de serviço: "))
-#remuneracao = int(input("Remuneração: "))
-
 @commit_close
 def db_insert(nome, sobrenome, cpf, tempoDeServico, remuneracao):
     return """
@@ -54,15 +48,24 @@ def db_updateRemuneracao(remuneracao, cpf):
     UPDATE funcionarios SET remuneracao = '{}' 
     WHERE cpf = '{}'  """.format(remuneracao, cpf)
 
+@commit_close
 def db_delete(cpf):
     return """
     DELETE FROM funcionarios 
     WHERE cpf = '{}'  """.format(cpf)
 
-print("""
-+-------------------------+
- ****Deletar cadastro****
-+-------------------------+
-""")
-cpf = int(input("informe o CPF:\n"))
+def db_select(valorDoCampo, campo):
+    con = sqlite3.connect('base_DeDados.db')
+    cur = con.cursor()  # conectando cursor
+    sql = """ 
+    SELECT id, nome, sobrenome, cpf, tempoDeServico, remuneracao
+    FROM funcionarios
+    WHERE {}=? 
+    """.format(valorDoCampo)
+    print("SQL:", sql)
+    cur.execute(sql, (campo,))
+    data = cur.fetchall()
+    con.close()
+    return data
+
 

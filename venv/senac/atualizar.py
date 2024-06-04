@@ -18,6 +18,7 @@ Qual campo será alterado?\n
 +-------------------------+
 """)
 campo = int(input())
+
 if(campo==1):
     nome = input("novo nome: ")
     db_updateNome(nome, cpfE)

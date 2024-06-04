@@ -1,11 +1,4 @@
-import sqlite3
-con = sqlite3.connect('venv/senac/base_DeDados.db')
-cur = con.cursor() #conectando cursor
-
-def db_delete(cpf):
-    return """
-    DELETE FROM funcionarios 
-    WHERE cpf = '{}'  """.format(cpf)
+from crud import db_delete
 
 print("""
 +-------------------------+
@@ -23,7 +16,7 @@ print("""
 """)
 op = int(input())
 if(op==1):
-    cur.execute(db_delete(cpf))
+    db_delete(cpf)
     print("usuário excluído com sucesso!")
-    con.commit() #executar os comandos na nossa base
-    con.close()
+
+
