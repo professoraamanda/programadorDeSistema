@@ -56,16 +56,15 @@ def db_delete(cpf):
 
 def db_select(valorDoCampo, campo):
     con = sqlite3.connect('base_DeDados.db')
-    cur = con.cursor()  # conectando cursor
+    cur = con.cursor() #conectando cursor
     sql = """ 
     SELECT id, nome, sobrenome, cpf, tempoDeServico, remuneracao
     FROM funcionarios
-    WHERE {}=? 
-    """.format(valorDoCampo)
-    print("SQL:", sql)
-    cur.execute(sql, (campo,))
-    data = cur.fetchall()
+    WHERE {}='{}'
+    """.format(campo, valorDoCampo)
+    cur.execute(sql)
+    dados = cur.fetchall()
     con.close()
-    return data
+    return dados
 
 
