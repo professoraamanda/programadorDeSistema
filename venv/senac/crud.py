@@ -137,6 +137,8 @@ def main():
         elif(op==0):
             print("Operação finalizada pelo usuário!")
             break
+            
+        print("teste")
 
 if __name__ == "__main__":
     main()
