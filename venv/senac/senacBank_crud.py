@@ -7,7 +7,7 @@ def main():
     while True:
         print("\nEscolha uma opção abaixo:           ")
         print("+====================================+")
-        print("|   ****Gestão de Funcionários****   |")
+        print("|        ****Senac Bank****          |")
         print("|          MENU DE OPÇÕES            |")
         print("|        1 - Buscar                  |")
         print("|        2 - Atualizar Dados         |")
@@ -53,21 +53,17 @@ def main():
 
             print("""
             +-------------------------+
-            ****Alterar cadastro****
+            |****Alterar cadastro**** |
+            +-------------------------+
+            |Qual campo será alterado?|\n
+            |    1 - titular          |
+            |    2 - cpf              |
+            |    3 - senha            |
+            |    4 - saldoC           |
+            |    5 - saldoP           |
             +-------------------------+
             """)
-            #conta = int(input("Digite o número da conta:\n"))
 
-            print("""
-            +-------------------------+
-            Qual campo será alterado?\n
-                1 - titular
-                2 - cpf
-                3 - senha
-                4 - saldoC
-                5 - saldoP
-            +-------------------------+
-            """)
             campo = int(input())
 
             if(campo==1):
@@ -96,7 +92,7 @@ def main():
                     saldoC = cliente.sacar(valor)
                     #saldoC = input("novo saldoC: ")
                     db_updateSaldoC(saldoC, senha)
-                if(op==2):
+                elif(op==2):
                     valor = float(input("Valor do depósito: R$ "))
                     saldoC = cliente.depositar(valor)
                     #saldoC = input("novo saldoC: ")
