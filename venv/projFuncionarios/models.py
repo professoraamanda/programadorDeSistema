@@ -1,0 +1,90 @@
+from django.db import models
+from django.urls import reverse # Used to generate URLs by reversing the URL patterns
+from django.db import models
+
+class Author(models.Model):
+    nome = models.CharField(max_length=100)
+    # outros campos
+
+    def __str__(self):
+        return self.nome
+
+# Create your models here.
+class MyModelName(models.Model):
+    """Uma típica classe definindo um modelo, derivada da classe Model."""
+
+    # Campos
+    my_field_name = models.CharField(max_length=20, help_text='Enter field documentation')
+    ...
+
+    # Metadados
+    class Meta:
+        ordering = ['-my_field_name']
+
+    # Métodos
+    def get_absolute_url(self):
+        """Retorna a url para acessar uma instancia específica de MyModelName."""
+        return reverse('model-detail-view', args=[str(self.id)])
+
+    def __str__(self):
+        """ String para representar o objeto MyModelName (no site Admin)."""
+        return self.my_field_name
+
+class Genre(models.Model):
+    """Uma típica classe definindo um modelo, derivada da classe Model."""
+
+    # Campos
+    name = models.CharField(max_length=200, help_text='Enter a book genre (e.g. Science Fiction)')
+    '''max_length=20 — Afima que o valor máximo do comprimento desse campo é de 20 caracteres.
+        help_text='Enter field documentation' — fornece um rótulo de texto para exibir uma ajuda para 
+        os usuários saberem qual valor fornecer, quando esse valor é inserido por um usuário por meio 
+        de um formulário HTML.'''
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return self.name
+    
+class Book(models.Model):
+    """Model representing a book (but not a specific copy of a book)."""
+    title = models.CharField(max_length=200)
+
+    # Foreign Key used because book can only have one author, but authors can have multiple books
+    # Author as a string rather than object because it hasn't been declared yet in the file
+    author = models.ForeignKey('Author', on_delete=models.SET_NULL, null=True)
+
+    summary = models.TextField(max_length=1000, help_text='Enter a brief description of the book')
+    isbn = models.CharField('ISBN', max_length=13, help_text='13 Character <a href="https://www.isbn-international.org/content/what-isbn">ISBN number</a>')
+
+    # ManyToManyField used because genre can contain many books. Books can cover many genres.
+    # Genre class has already been defined so we can specify the object above.
+    genre = models.ManyToManyField(Genre, help_text='Select a genre for this book')
+
+    def __str__(self):
+        """String for representing the Model object."""
+        return self.title
+
+    def get_absolute_url(self):
+        """Returns the url to access a detail record for this book."""
+        return reverse('book-detail', args=[str(self.id)])
+        
+        
+    
+
+# Crie um novo registro usando o construtor do modelo.
+record = MyModelName(my_field_name="Instance #1")
+
+# Salve o objeto no banco de dados.
+record.save()
+
+# Acessar valores de campo de modelo usando atributos do Python.
+print(record.id) # should return 1 for the first record.
+print(record.my_field_name) # should print 'Instance #1'
+
+# Altere o registro modificando os campos e, em seguida, chamando save ().
+record.my_field_name = "New Instance Name"
+record.save()
+
+print(record.id) # should return 1 for the first record.
+print(record.my_field_name) # should print 'Instance #1'
+
+#all_books = Book.objects.all()
