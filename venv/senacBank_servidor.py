@@ -37,16 +37,16 @@ def db_updateSenha(senha, conta):
     WHERE conta = {}  """.format(senha, conta)
 
 @commit_close
-def db_updateSaldoC(saldoC, senha):
+def db_updateSaldoC(saldoC, conta):
     return """
     UPDATE dataset_clientes SET saldoC = {}
-    WHERE senha = {}  """.format(saldoC, senha)
+    WHERE conta = {}  """.format(saldoC, conta)
 
 @commit_close
-def db_updateSaldoP(saldoP, senha):
+def db_updateSaldoP(saldoP, conta):
     return """
     UPDATE dataset_clientes SET saldoP = {}
-    WHERE senha = {}  """.format(saldoP, senha)
+    WHERE conta = {}  """.format(saldoP, conta)
 
 @commit_close
 def db_delete(cpf):
@@ -58,7 +58,7 @@ def db_select(valorDoCampo, campo):
         con = sqlite3.connect('venv/senac/dataset_banco.db')
         cur = con.cursor() #conectando cursor
         sql = """ 
-        SELECT conta, titular, cpf, saldoC, saldoP
+        SELECT conta, titular, cpf, senha, saldoC, saldoP
         FROM dataset_clientes
         WHERE {}='{}'
         """.format(campo, valorDoCampo)
@@ -73,11 +73,10 @@ def home():
                 +====================================+
                 |      1 - Já sou cliente            |
                 |      2 - Abrir conta               |
-                |      0 - Encerrar                  |          
+                |      3 - Fazer um depósito         |         
                 +====================================+\n""")))
-        if(op==0):
-            break
-        elif(op==2):
+        
+        if(op==2):
             #CADASTRAR
 
             titular = input("Titular: ")
@@ -86,22 +85,35 @@ def home():
             saldoC = 0
             saldoP = 0
 
-            cliente = ContaCorrente(titular, cpf, senha, saldoC) #instancia
+            cliente = ContaPoupanca(titular, cpf, senha, saldoC, saldoP) #instancia
         
             print("Deve ser feito um depósito inicial para abertura de conta!")
             valor = float(input("Valor do depósito: R$ "))
             saldoC = cliente.depositar(valor)
             #saldoC = input("novo saldoC: ")
             db_updateSaldoC(saldoC, cpf)
+            db_insert(titular, cpf, senha, saldoC, saldoP) #cria uma conta
+            print("Conta criada com sucesso!")
 
-            db_insert(titular, cpf, senha, saldoC, saldoP)
-        elif(op==1):
+            conta, titular, cpf, senha, saldoC, saldoP = (db_select(cpf, 'cpf'))
+
+        elif(op==1): #consultar
             print("""\nEntre com seus dados""")
             valorDoCampo = int(input("Número da Conta: "))
-            conta, titular, cpf, saldoC, saldoP = (db_select(valorDoCampo, 'conta'))
+            conta, titular, cpf, senha, saldoC, saldoP = (db_select(valorDoCampo, 'conta'))
             print(conta, titular, cpf, saldoC, saldoP)
             senha = int(input("senha: "))            
-            cliente = ContaCorrente(titular, cpf, senha, saldoC) #instancia
+            cliente = ContaPoupanca(titular, cpf, senha, saldoC, saldoP) #instancia
+
+        elif(op==3): #depositar
+            conta = int(input("conta: "))
+            conta, titular, cpf, senha, saldoC, saldoP = (db_select(conta, 'conta'))
+            cliente = ContaPoupanca(titular, cpf, senha, saldoC, saldoP) #instancia
+            valor = float(input("Valor do depósito: R$ "))
+            saldoC = cliente.depositar(valor)
+            #saldoC = input("novo saldoC: ")
+            db_updateSaldoC(saldoC, conta)
+
         return cliente, conta
      
 
@@ -124,6 +136,49 @@ class ContaCorrente():
             self.saldoC += valorDoDeposito
             print(f"Depósito de R${valorDoDeposito:.2f} realizado com sucesso.")
             return self.saldoC
+    
+    def aplicar(self, valorDaAplicacao, ContaPoupanca):
+      if valorDaAplicacao <= self.saldoC:
+        self.saldoC -= valorDaAplicacao #variavel para aplicação
+        ContaPoupanca.depositoP(valorDaAplicacao) #deposita na conta poupança
+        print(f"Aplicação na Poupança de R${valorDaAplicacao:.2f} realizado com sucesso.")
+      else:
+        print("Saldo insuficiente.")
+
+      return self.saldoC, self.saldoP
+
+class ContaPoupanca(ContaCorrente):
+    def __init__(self, titular, cpf, senha, saldoC=0, saldoP=0):
+        super().__init__(titular, cpf, senha, saldoC)
+        self.saldoP = saldoP
+    
+    def depositoP(self, valorDoDeposito):
+      self.saldoP += valorDoDeposito
+      print(f"Depósito de R${valorDoDeposito:.2f} realizado com sucesso.")
+      return self.saldoP
+
+    def resgatar(self, valorDoResgate, ContaCorrente):
+      if valorDoResgate <= self.saldoP:
+        self.saldoP -= valorDoResgate #subtrai do saldo da poupança
+        ContaCorrente.depositar(valorDoResgate) #deposita na conta corrente
+        print(f"Resgate de R${valorDoResgate:.2f} para Conta Corrente realizado com sucesso.")
+      else:
+        print("Saldo insuficiente.")
+
+      return self.saldoC, self.saldoP
+
+    def mostrarDados(self):
+        conta, titular, cpf, senha, saldoC, saldoP = (db_select(self.senha, 'senha'))
+        print("""
+        +------------------------------------------------+
+        | Titular Conta Corrente: {}
+        | Número da conta: {}
+        | Saldo Conta Corrente: R$ {}
+        | Saldo Conta Poupança: R$ {}
+        +------------------------------------------------+
+      """.format(titular, conta, saldoC, saldoP))
+
+      
 
     
 
